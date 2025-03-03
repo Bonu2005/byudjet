@@ -1,0 +1,120 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Region {
+  id         Int          @id @default(autoincrement())
+  name       String
+  User       User[]
+  BannerItem BannerItem[]
+}
+
+model Category {
+  id     Int      @id @default(autoincrement())
+  name   String
+  Banner Banner[]
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  fullName    String
+  phone       String
+  region      Region        @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  regionId    Int
+  email       String
+  password    String
+  balance     Float         @default(5000.000)
+  role        Role          @default(USER)
+  Comment     Comment[]
+  Like        Like[]
+  TransAction Transaction[]
+  Banner      Banner[]
+  photo       String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model Banner {
+  id          Int           @id @default(autoincrement())
+  name        String
+  description String
+  target      Float
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      Int
+  balance     Float         @default(0.0)
+  image       String[]
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId  Int
+  status      Status        @default(PENDING)
+  BannerItem  BannerItem[]
+  Comment     Comment[]
+  Like        Like[]
+  TransAction Transaction[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model BannerItem {
+  id       Int    @id @default(autoincrement())
+  banner   Banner @relation(fields: [bannerId], references: [id])
+  bannerId Int
+  region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  regionId Int
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  msg_txt   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  banner    Banner   @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+  bannerId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id       Int    @id @default(autoincrement())
+  banner   Banner @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+  bannerId Int
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId   Int
+}
+
+model Transaction {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  banner    Banner   @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+  bannerId  Int
+  summa     Float
+  createdAt DateTime @default(now())
+}
+
+model tempModel {
+  id    Int    @id @default(autoincrement())
+  email String
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  PENDING
+  ACTIVE
+  INACTIVE
+  REJECT
+}
